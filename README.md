@@ -157,7 +157,7 @@ const businesses = [
 ];
 
 function buildMessage(name){
-  return `Olá! Aqui é o Juan, da Nexo 👋 Notei que o ${name} ainda não tem um site e vi uma oportunidade de ajudar a atrair mais clientes com automação de atendimento no WhatsApp e presença digital profissional. Posso te mostrar rapidinho como funciona?`;
+  return `Olá! Aqui é o Juan, da Nexo 👋 Vi que o ${name} ainda não tem um site e a gente cria sites profissionais para negócios locais aqui em SP. Posso te mandar uma proposta rápida sem compromisso?`;
 }
 
 const grid = document.getElementById('grid');
