@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Nexo — Prospecção SP v6</title>
+<title>Nexo — Prospecção SP v8</title>
 <style>
   :root{
     --bg: #14110f; --bg-card: #1c1815; --line: #2e2822;
@@ -19,7 +19,8 @@
   .notice{margin-top:16px;background:var(--accent-soft);border:1px solid var(--accent);padding:14px 16px;border-radius:10px;font-size:13px;line-height:1.55;}
   .notice b{color:var(--accent);}
   .notice ul{margin:8px 0 0;padding-left:18px;}
-  .notice li{margin-bottom:4px;}
+  .notice li{margin-bottom:5px;}
+  .notice code{background:#241f1b;padding:1px 6px;border-radius:4px;font-size:12px;}
   .controls{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 14px;}
   select,input{background:var(--bg-card);border:1px solid var(--line);color:var(--text);padding:9px 12px;border-radius:8px;font-size:14px;}
   input{flex:1;min-width:180px;}
@@ -48,16 +49,18 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">Nexo · Prospecção v6</div>
-    <h1>104 estabelecimentos novos — SP</h1>
-    <p class="sub">Leva 5. Nenhum repete as levas anteriores (30 + 82 + 63 + 78 = 253 já na sua base). Todos com número de celular, mensagem escrita por categoria e desconto de agosto no texto.</p>
+    <div class="brand">Nexo · Prospecção v8</div>
+    <h1>102 estabelecimentos novos — SP</h1>
+    <p class="sub">Leva 7, com os seus 3 sites de referência dentro de cada mensagem. Nada repete as levas anteriores (30 + 82 + 63 + 78 + 104 + 107 = 464 na sua base).</p>
     <div class="notice">
-      <b>Leia antes de disparar:</b>
+      <b>Sobre o carrossel na mensagem — não dá, e o motivo importa:</b>
       <ul>
-        <li><b>São 104, não 100</b> — sobrou margem pra você descartar os que não servirem.</li>
-        <li><b>"Sem site" não está confirmado.</b> A busca do Google Maps não me devolve o campo de site, então filtrei pelo que dá pra confirmar: celular (9 dígitos, quase sempre WhatsApp) e negócio pequeno o bastante pra provavelmente não ter site. Antes de mandar, bata o olho no perfil do Google — se tiver site, pula. Prometer "vi que você não tem site" pra quem tem queima o contato no primeiro segundo, por isso <b>nenhuma mensagem afirma isso</b>.</li>
-        <li><b>Os 29 primeiros</b> (manicure, floricultura, ótica, mecânica, turismo, dança, reforço, sapataria) vieram da lista que te passei mais cedo hoje. Se já falou com algum, marca como contatado.</li>
-        <li><b>Sem demo, o CTA é "te passo os detalhes e o valor"</b> — nenhuma mensagem promete mockup que você ainda não tem. Assim que fechar o primeiro, tira print e me fala: eu reescrevo os textos com "olha um exemplo do que entrego", que converte bem melhor.</li>
+        <li>Mensagem de WhatsApp aberta por link <code>wa.me</code> é <b>texto puro</b>. Carrossel só existe em template aprovado da API oficial do WhatsApp Business (precisa de conta Meta Business, template homologado e um disparador — não sai por link). Então fiz o mais próximo disso:</li>
+        <li><b>Modo padrão (<code>linkes</code>):</b> os 3 sites vão escritos na mensagem. Funciona hoje, sem depender de nada. Só o primeiro link ganha miniatura no WhatsApp.</li>
+        <li><b>Modo carrossel (<code>portfolio</code>):</b> subi junto o arquivo <code>portfolio.html</code> — uma página com os 3 sites em carrossel de verdade, com setas e swipe no celular. Suba no seu GitHub Pages, cole o endereço em <code>PORTFOLIO_URL</code> no topo do script e troque <code>MODO</code> para <code>'portfolio'</code>. Aí a mensagem vai com <b>um link só</b>, limpo, com miniatura — e o carrossel abre ao tocar.</li>
+        <li><b>Recomendo o modo carrossel.</b> Três links numa primeira mensagem fria aumenta chance de bloqueio e polui a leitura. Um link com preview converte melhor.</li>
+        <li>Coloque os prints dos 3 sites em <code>img/agro.png</code>, <code>img/viva.png</code> e <code>img/kolor.png</code> — sem eles a página mostra um placeholder no lugar da imagem.</li>
+        <li>Ainda vale o de sempre: o Maps não devolve o campo de site, então "sem site" é hipótese. Confere o perfil antes de mandar.</li>
       </ul>
     </div>
   </header>
@@ -84,170 +87,189 @@
   <div class="count"><span id="count"></span><button class="reset" id="reset">Limpar marcações de contatado</button></div>
   <div class="grid" id="grid"></div>
   <footer>
-    Gerado para a Nexo — leva 5, agosto/2026.<br>
+    Gerado para a Nexo — leva 7, agosto/2026.<br>
     Contatos coletados de perfis públicos do Google Maps. Se alguém pedir pra não receber mais mensagens, retire da lista e não insista (LGPD, art. 18).
   </footer>
 </div>
 
 <script>
+/* ============================================================
+   CONFIGURAÇÃO — mexa só aqui
+   MODO = 'links'      → os 3 sites escritos na mensagem (padrão)
+   MODO = 'portfolio'  → um link só, abrindo o carrossel
+   ============================================================ */
+const MODO = 'links';
+const PORTFOLIO_URL = 'https://juanraffffael-coder.github.io/clientes-site/portfolio.html';
+
+const SITES = [
+  'https://agronegociosferreira.com.br',
+  'https://www.vivamercato.com.br',
+  'https://kolorflakes.com.br'
+];
+
+function blocoPortfolio(){
+  if (MODO === 'portfolio'){
+    return `Dá uma olhada em alguns sites que já entreguei:\n${PORTFOLIO_URL}`;
+  }
+  return `Dá uma olhada em alguns sites que já entreguei:\n${SITES.join('\n')}`;
+}
+
 const businesses = [
-  {name:"Studio Daniele Fraile", addr:"Vila Talarico", zone:"Zona Leste", cat:"Manicure", phone:"5511914909464"},
-  {name:"StudioTrês Nail", addr:"Vila Formosa", zone:"Zona Leste", cat:"Manicure", phone:"5511949432246"},
-  {name:"Ateliê Dany Unhas de Gel", addr:"Tatuapé", zone:"Zona Leste", cat:"Manicure", phone:"5511973846827"},
-  {name:"Studio Sabrina Dourado", addr:"Jardim Norma", zone:"Zona Leste", cat:"Manicure", phone:"5511955778047"},
-  {name:"Sabores até Você", addr:"Parque Peruche", zone:"Zona Norte", cat:"Salgados e Doces", phone:"5511992246522"},
-  {name:"Minha Costureira Meu Sapateiro", addr:"Jardim das Acácias", zone:"Zona Sul", cat:"Sapataria", phone:"5511918546646"},
-  {name:"Sapataria da Vila", addr:"Vila Clementino", zone:"Zona Sul", cat:"Sapataria", phone:"5511948562140"},
-  {name:"Sapataria Nova Jardins", addr:"Jardim Paulista", zone:"Centro", cat:"Sapataria", phone:"5511969721332"},
-  {name:"Sicatur Viagens", addr:"Vila Alpina", zone:"Zona Leste", cat:"Turismo", phone:"5511971494119"},
-  {name:"Ângulo Travel", addr:"Bela Vista", zone:"Centro", cat:"Turismo", phone:"5511973073491"},
-  {name:"Ágora Tour", addr:"Higienópolis", zone:"Centro", cat:"Turismo", phone:"5511913490569"},
-  {name:"School of Dance Mara Santos", addr:"Vila da Saúde", zone:"Zona Sul", cat:"Escola de Dança", phone:"5511996975401"},
-  {name:"Yandê Dança e Movimento", addr:"Campo Belo", zone:"Zona Sul", cat:"Escola de Dança", phone:"5511975506448"},
-  {name:"Instituto da Dança", addr:"Interlagos", zone:"Zona Sul", cat:"Escola de Dança", phone:"5511944542907"},
-  {name:"Piva Educacional", addr:"Campo Belo", zone:"Zona Sul", cat:"Reforço Escolar", phone:"5511992019404"},
-  {name:"Saber Ensino Individual", addr:"Vila Mariana", zone:"Zona Sul", cat:"Reforço Escolar", phone:"5511942297800"},
-  {name:"Ensinando o Saber", addr:"Vila Pirajussara", zone:"Zona Oeste", cat:"Reforço Escolar", phone:"5511910100018"},
-  {name:"Professor Wesley", addr:"Rosa Maria", zone:"Zona Oeste", cat:"Reforço Escolar", phone:"5511960300767"},
-  {name:"Aulas Particulares Mooca", addr:"Mooca", zone:"Zona Leste", cat:"Reforço Escolar", phone:"5511993479715"},
-  {name:"Mecânica Horto Center", addr:"Parque Mandaqui", zone:"Zona Norte", cat:"Oficina Mecânica", phone:"5511982042342"},
-  {name:"Doctor Auto Prime", addr:"Casa Verde", zone:"Zona Norte", cat:"Oficina Mecânica", phone:"5511996377301"},
-  {name:"Guia Norte Auto Center", addr:"Vila Maria Baixa", zone:"Zona Norte", cat:"Oficina Mecânica", phone:"5511991885939"},
-  {name:"Floricultura Praça das Flores", addr:"Vila Talarico", zone:"Zona Leste", cat:"Floricultura", phone:"5511947685107"},
-  {name:"Floricultura Flor Extra", addr:"Vila Ré", zone:"Zona Leste", cat:"Floricultura", phone:"5511958748311"},
-  {name:"Floricultura Rosi Flores", addr:"Itaquera", zone:"Zona Leste", cat:"Floricultura", phone:"5511947620223"},
-  {name:"Ótica Leste Vision", addr:"Vila São Francisco", zone:"Zona Leste", cat:"Ótica", phone:"5511968188677"},
-  {name:"Óticas Veluzzi", addr:"Vila Matilde", zone:"Zona Leste", cat:"Ótica", phone:"5511974288950"},
-  {name:"Óticas Platinum", addr:"Cangaíba", zone:"Zona Leste", cat:"Ótica", phone:"5511994758930"},
-  {name:"Fábrica de Óculos Leste", addr:"Parque Artur Alvim", zone:"Zona Leste", cat:"Ótica", phone:"5511951595477"},
+  {name:"Pizzaria Donna Adelaide", addr:"Imirim", zone:"Zona Norte", cat:"Pizzaria", phone:"5511917886050"},
+  {name:"Oli Pizzas e Pães Artesanais", addr:"Itaim Bibi", zone:"Zona Oeste", cat:"Pizzaria", phone:"5511939333906"},
+  {name:"Casa de Carnes Natal", addr:"Consolação", zone:"Centro", cat:"Açougue", phone:"5511978217995"},
+  {name:"Belari Gelato", addr:"Vila Mariana", zone:"Zona Sul", cat:"Sorveteria", phone:"5511932435365"},
+  {name:"Coffee Lab", addr:"Vila Madalena", zone:"Zona Oeste", cat:"Cafeteria", phone:"5511991488052"},
+  {name:"London Coffee Station", addr:"Vila Mariana", zone:"Zona Sul", cat:"Cafeteria", phone:"5511930991094"},
+  {name:"Shodai Sushi Delivery", addr:"Bela Vista", zone:"Centro", cat:"Sushi e Japonesa", phone:"5511988281805"},
+  {name:"Katamaru Delivery Oriental", addr:"Liberdade", zone:"Centro", cat:"Sushi e Japonesa", phone:"5511960817616"},
+  {name:"Requinte Espetos", addr:"Mooca", zone:"Zona Leste", cat:"Espetinho e Churrasco", phone:"5511994148854"},
+  {name:"Espeteco", addr:"Limão", zone:"Zona Norte", cat:"Espetinho e Churrasco", phone:"5511996496868"},
+  {name:"Fit House Itaim Bibi", addr:"Itaim Bibi", zone:"Zona Oeste", cat:"Produtos Naturais", phone:"5511945345745"},
+  {name:"Empório Áurea", addr:"República", zone:"Centro", cat:"Produtos Naturais", phone:"5511945322838"},
+  {name:"Empório Santa Inês", addr:"Brás", zone:"Centro", cat:"Produtos Naturais", phone:"5511985221524"},
+  {name:"Empório Magna Vita", addr:"Jardim Paulistano", zone:"Zona Oeste", cat:"Produtos Naturais", phone:"5511951640258"},
+  {name:"Ki Fish Mercadão", addr:"Centro Histórico", zone:"Centro", cat:"Peixaria", phone:"5511940067607"},
+  {name:"Hedama Pescados", addr:"Vila da Saúde", zone:"Zona Sul", cat:"Peixaria", phone:"5511946294377"},
 
-  {name:"Pet Shop Novopet", addr:"Limão", zone:"Zona Norte", cat:"Pet Shop", phone:"5511998586987"},
-  {name:"Pet Shop Bisteca", addr:"Vila Sabrina", zone:"Zona Norte", cat:"Pet Shop", phone:"5511989261230"},
-  {name:"Banho e Tosa Rita Groomer", addr:"Limão", zone:"Zona Norte", cat:"Pet Shop", phone:"5511995012292"},
-  {name:"5àsec Jardim Sul", addr:"Vila Andrade", zone:"Zona Sul", cat:"Lavanderia", phone:"5511985855455"},
-  {name:"Chaveiro 24 Horas Barra Funda", addr:"Barra Funda", zone:"Centro", cat:"Chaveiro", phone:"5511984957473"},
-  {name:"Chaveiro Paulista 24 Horas", addr:"Consolação", zone:"Centro", cat:"Chaveiro", phone:"5511956170813"},
-  {name:"Chaveiro 24 Horas Wesley", addr:"Barra Funda", zone:"Centro", cat:"Chaveiro", phone:"5511986638718"},
-  {name:"Chaveiro 24 Horas SP", addr:"Vila Mariana", zone:"Zona Sul", cat:"Chaveiro", phone:"5511916737171"},
-  {name:"Chaveiro 24 Horas Bela Vista", addr:"Bela Vista", zone:"Centro", cat:"Chaveiro", phone:"5511987851481"},
-  {name:"Lunar Dedetização", addr:"Vila Santa Lúcia", zone:"Zona Leste", cat:"Dedetizadora", phone:"5511992690923"},
-  {name:"Dedetizadora Otto", addr:"República", zone:"Centro", cat:"Dedetizadora", phone:"5511965387795"},
-  {name:"RCA Ar Condicionado", addr:"Água Rasa", zone:"Zona Leste", cat:"Ar Condicionado", phone:"5511947809096"},
-  {name:"Oficina do AR", addr:"Tatuapé", zone:"Zona Leste", cat:"Ar Condicionado", phone:"5511963407432"},
-  {name:"Proar Climatização", addr:"Itaim Bibi", zone:"Zona Oeste", cat:"Ar Condicionado", phone:"5511949840899"},
-  {name:"Percusor Climatização", addr:"Santa Cecília", zone:"Centro", cat:"Ar Condicionado", phone:"5511978514196"},
-  {name:"SeuAr Climatização", addr:"Bela Vista", zone:"Centro", cat:"Ar Condicionado", phone:"5511943138055"},
-  {name:"Del'Art Garden Paisagismo", addr:"Vila Prudente", zone:"Zona Leste", cat:"Paisagismo", phone:"5511939431001"},
-  {name:"MUDA Paisagismo", addr:"Alto da Lapa", zone:"Zona Oeste", cat:"Paisagismo", phone:"5511937499473"},
-  {name:"Paisagismo Brasil", addr:"Higienópolis", zone:"Centro", cat:"Paisagismo", phone:"5511914878585"},
-  {name:"Quintal Decorinha", addr:"Higienópolis", zone:"Centro", cat:"Buffet Infantil", phone:"5511917180949"},
-  {name:"Magic and Co. Buffet", addr:"Vila Olímpia", zone:"Zona Oeste", cat:"Buffet Infantil", phone:"5511940685837"},
-  {name:"Ateliê da Festa", addr:"Ipiranga", zone:"Zona Sul", cat:"Buffet Infantil", phone:"5511989548890"},
-  {name:"Super Peralta Buffet", addr:"Parque São Domingos", zone:"Zona Oeste", cat:"Buffet Infantil", phone:"5511977296259"},
-  {name:"Tapeçaria Incanto", addr:"Cidade Líder", zone:"Zona Leste", cat:"Tapeçaria", phone:"5511940036336"},
-  {name:"Tapeçaria Kisofá", addr:"Vila Dalila", zone:"Zona Leste", cat:"Tapeçaria", phone:"5511914031526"},
-  {name:"Tapeçaria Gerci", addr:"Vila Santa Catarina", zone:"Zona Sul", cat:"Tapeçaria", phone:"5511933964668"},
-  {name:"Flex Solutions Decors", addr:"Jardim Ampliação", zone:"Zona Sul", cat:"Cortinas e Persianas", phone:"5511910733185"},
-  {name:"Costa e Barros Persianas", addr:"Santo Amaro", zone:"Zona Sul", cat:"Cortinas e Persianas", phone:"5511986340166"},
-  {name:"Jr Cortinas e Persianas", addr:"Vila Mariana", zone:"Zona Sul", cat:"Cortinas e Persianas", phone:"5511977416618"},
+  {name:"AJF Construções e Reformas", addr:"Caxingui", zone:"Zona Oeste", cat:"Reforma e Construção", phone:"5511955592905"},
+  {name:"M&G Construções e Reformas", addr:"Sacomã", zone:"Zona Sul", cat:"Reforma e Construção", phone:"5511946540609"},
+  {name:"Nova Construção e Reformas", addr:"Ipiranga", zone:"Zona Sul", cat:"Reforma e Construção", phone:"5511993031997"},
+  {name:"Reforma de Apartamento SP", addr:"Higienópolis", zone:"Centro", cat:"Reforma e Construção", phone:"5511961699182"},
+  {name:"SPS Reformas", addr:"Brás", zone:"Centro", cat:"Reforma e Construção", phone:"5511978406750"},
+  {name:"Ferreira Costa Construções", addr:"Jardim Ernestina", zone:"Zona Sul", cat:"Reforma e Construção", phone:"5511959612047"},
+  {name:"S.A Impermeabilização", addr:"Cerqueira César", zone:"Centro", cat:"Impermeabilização", phone:"5511984480213"},
+  {name:"Jesilva Construção", addr:"Jardim Boa Vista", zone:"Zona Oeste", cat:"Impermeabilização", phone:"5511985705605"},
+  {name:"Imperex Impermeabilização", addr:"Vila Moinho Velho", zone:"Zona Sul", cat:"Impermeabilização", phone:"5511984681816"},
+  {name:"MeJ Impermeabilizações", addr:"Jardim das Imbuias", zone:"Zona Sul", cat:"Impermeabilização", phone:"5511953278113"},
+  {name:"LF Clean SP", addr:"Paraíso", zone:"Centro", cat:"Higienização de Estofados", phone:"5511996765181"},
+  {name:"Land Clean", addr:"Jardim Nosso Lar", zone:"Zona Sul", cat:"Higienização de Estofados", phone:"5511975544883"},
+  {name:"Clean São Paulo", addr:"Parque Nações Unidas", zone:"Zona Norte", cat:"Higienização de Estofados", phone:"5511957723322"},
+  {name:"Limpeza Em Dobro", addr:"Vila Sônia", zone:"Zona Oeste", cat:"Higienização de Estofados", phone:"5511987828631"},
+  {name:"Higienização de Colchão e Sofá", addr:"Americanópolis", zone:"Zona Sul", cat:"Higienização de Estofados", phone:"5511932276924"},
+  {name:"WHigienização", addr:"Vila Morse", zone:"Zona Oeste", cat:"Higienização de Estofados", phone:"5511958331491"},
+  {name:"MS Limpeza e Higienização", addr:"Santana", zone:"Zona Norte", cat:"Higienização de Estofados", phone:"5511998220908"},
+  {name:"RJ Assentamento de Pisos", addr:"Jardim São Luís", zone:"Zona Sul", cat:"Pisos e Revestimentos", phone:"5511976730900"},
+  {name:"Outlet dos Pisos", addr:"Parque Paineiras", zone:"Zona Leste", cat:"Pisos e Revestimentos", phone:"5511988055345"},
+  {name:"Revesti Life", addr:"Moema", zone:"Zona Sul", cat:"Pisos e Revestimentos", phone:"5511940243067"},
+  {name:"Paixão Solar", addr:"Tatuapé", zone:"Zona Leste", cat:"Energia Solar", phone:"5511980250255"},
+  {name:"Marsol Energia Solar", addr:"Vila Fernandes", zone:"Zona Leste", cat:"Energia Solar", phone:"5511970680305"},
+  {name:"ON-GRID Painel Solar", addr:"Casa Verde", zone:"Zona Norte", cat:"Energia Solar", phone:"5511976929292"},
+  {name:"Alpha Solar", addr:"Vila Regina Feijó", zone:"Zona Leste", cat:"Energia Solar", phone:"5511963633605"},
+  {name:"Brilho da Art Comunicação Visual", addr:"Vila Nhocuné", zone:"Zona Leste", cat:"Comunicação Visual", phone:"5511953403795"},
+  {name:"Arcasign Comunicação Visual", addr:"Jardim Brasil", zone:"Zona Norte", cat:"Comunicação Visual", phone:"5511995825971"},
+  {name:"North Visual", addr:"Cidade Líder", zone:"Zona Leste", cat:"Comunicação Visual", phone:"5511987094467"},
+  {name:"SP Letras", addr:"Vila Marieta", zone:"Zona Leste", cat:"Comunicação Visual", phone:"5511948225365"},
+  {name:"BM Lírios Personalizados", addr:"Parque Primavera", zone:"Zona Sul", cat:"Brindes Personalizados", phone:"5511939479657"},
+  {name:"Estamparia Camisetas e Brindes", addr:"Vila Guilherme", zone:"Zona Norte", cat:"Brindes Personalizados", phone:"5511951320051"},
+  {name:"SP Brindes Personalizados", addr:"Vila Amélia", zone:"Zona Norte", cat:"Brindes Personalizados", phone:"5511940110737"},
+  {name:"AdriArtes e Personalizados", addr:"Campos Elíseos", zone:"Centro", cat:"Brindes Personalizados", phone:"5511947647012"},
+  {name:"Estampa da Hora", addr:"Pinheiros", zone:"Zona Oeste", cat:"Brindes Personalizados", phone:"5511983675170"},
+  {name:"4Youpersonalize", addr:"Parada Inglesa", zone:"Zona Norte", cat:"Brindes Personalizados", phone:"5511956103100"},
+  {name:"Serigrart Produtos Personalizados", addr:"República", zone:"Centro", cat:"Brindes Personalizados", phone:"5511976693765"},
+  {name:"Loca Norte Caçambas", addr:"Vila Constança", zone:"Zona Norte", cat:"Caçambas e Entulho", phone:"5511939415467"},
+  {name:"JB Caçambas", addr:"Vila Formosa", zone:"Zona Leste", cat:"Caçambas e Entulho", phone:"5511937054532"},
+  {name:"SOS Mini Entulhos", addr:"Jardim Paulistano", zone:"Zona Oeste", cat:"Caçambas e Entulho", phone:"5511923730011"},
+  {name:"Aluguel de Caçamba de Entulho", addr:"Vila Brasílio Machado", zone:"Zona Sul", cat:"Caçambas e Entulho", phone:"5511917705962"},
+  {name:"Dica Caçambas", addr:"Vila Mascote", zone:"Zona Sul", cat:"Caçambas e Entulho", phone:"5511940829093"},
+  {name:"Trash Coleta", addr:"Moema", zone:"Zona Sul", cat:"Caçambas e Entulho", phone:"5511947124118"},
+  {name:"Montador de Móveis Pirituba", addr:"Pirituba", zone:"Zona Oeste", cat:"Montador de Móveis", phone:"5511986959339"},
+  {name:"Montador Rubens Sousa", addr:"Bosque da Saúde", zone:"Zona Sul", cat:"Montador de Móveis", phone:"5511960171294"},
+  {name:"Montador Eder Vinicius", addr:"Bosque da Saúde", zone:"Zona Sul", cat:"Montador de Móveis", phone:"5511933056418"},
+  {name:"Montador de Móveis e Carretos", addr:"Campos Elíseos", zone:"Centro", cat:"Montador de Móveis", phone:"5511986246927"},
+  {name:"Bru Montador de Móveis", addr:"Jardim Mimar", zone:"Zona Leste", cat:"Montador de Móveis", phone:"5511951420186"},
+  {name:"Montador de Móveis Paulo", addr:"Jardim Monte Kemel", zone:"Zona Oeste", cat:"Montador de Móveis", phone:"5511991258064"},
+  {name:"Montador de Móveis Zona Sul", addr:"Jardim Aeroporto", zone:"Zona Sul", cat:"Montador de Móveis", phone:"5511966432401"},
+  {name:"Depilfiber", addr:"Vila Gomes Cardim", zone:"Zona Leste", cat:"Depilação a Laser", phone:"5511948799094"},
+  {name:"Maislaser Jardins", addr:"Jardim Paulista", zone:"Centro", cat:"Depilação a Laser", phone:"5511942261864"},
+  {name:"Bella Laser", addr:"Paraíso", zone:"Centro", cat:"Depilação a Laser", phone:"5511975381206"},
+  {name:"Julia Laser Mooca", addr:"Mooca", zone:"Zona Leste", cat:"Depilação a Laser", phone:"5511993807544"},
 
-  {name:"Mansão Eventual Estúdio", addr:"Brooklin", zone:"Zona Sul", cat:"Fotografia", phone:"5511925542704"},
-  {name:"VM Arte em Fotografias", addr:"Vila Santo Estêvão", zone:"Zona Sul", cat:"Fotografia", phone:"5511955593662"},
-  {name:"Juliana Ferrari Fotografia", addr:"Tatuapé", zone:"Zona Leste", cat:"Fotografia", phone:"5511965564476"},
-  {name:"Estúdio Imagem Fotografia", addr:"Tatuapé", zone:"Zona Leste", cat:"Fotografia", phone:"5511984350335"},
-  {name:"André Personal Fotografia", addr:"Pinheiros", zone:"Zona Oeste", cat:"Fotografia", phone:"5511992490170"},
-  {name:"O Mundo Play & Diversões", addr:"Cidade D'Abril", zone:"Zona Oeste", cat:"Aluguel de Brinquedos", phone:"5511993079545"},
-  {name:"Magic Fest Brinquedos", addr:"Vila Leopoldina", zone:"Zona Oeste", cat:"Aluguel de Brinquedos", phone:"5511945170574"},
-  {name:"DK Decoração de Festas", addr:"Vila Pedra Branca", zone:"Zona Norte", cat:"Aluguel de Brinquedos", phone:"5511991183244"},
-  {name:"Baby Toys Rental Events", addr:"Vila Palmeiras", zone:"Zona Norte", cat:"Aluguel de Brinquedos", phone:"5511947540709"},
-  {name:"Locação de Brinquedos Leiloca", addr:"Vila Hebe", zone:"Zona Norte", cat:"Aluguel de Brinquedos", phone:"5511940242200"},
-  {name:"Decor Gesso & Drywall", addr:"Vila Emir", zone:"Zona Sul", cat:"Gesso e Drywall", phone:"5511981512673"},
-  {name:"Gesso e Drywall Nacional SP", addr:"Liberdade", zone:"Centro", cat:"Gesso e Drywall", phone:"5511914191108"},
-  {name:"Pro Gesso Drywall", addr:"Jardim Santa Cruz", zone:"Zona Norte", cat:"Gesso e Drywall", phone:"5511981633455"},
-  {name:"Reforbrax Drywall", addr:"Parque Jabaquara", zone:"Zona Sul", cat:"Gesso e Drywall", phone:"5511957871590"},
-  {name:"Gesso Drywall Zaidan", addr:"Vila São Francisco", zone:"Zona Sul", cat:"Gesso e Drywall", phone:"5511962623751"},
-  {name:"Eletricista Residencial Liberdade", addr:"Liberdade", zone:"Centro", cat:"Eletricista", phone:"5511913234680"},
-  {name:"Eletricista Marcos Iorio", addr:"Chácara Mafalda", zone:"Zona Leste", cat:"Eletricista", phone:"5511982168222"},
-  {name:"Sherlock Houses Eletricista", addr:"Casa Verde", zone:"Zona Norte", cat:"Eletricista", phone:"5511997140441"},
-  {name:"Eletricista Residencial Ricardo", addr:"Brás", zone:"Centro", cat:"Eletricista", phone:"5511948771161"},
-  {name:"MLG Manutenção Elétrica", addr:"Tatuapé", zone:"Zona Leste", cat:"Eletricista", phone:"5511910607056"},
-  {name:"L A Hidráulica e Serviços", addr:"Sumaré", zone:"Zona Oeste", cat:"Hidráulica", phone:"5511913975155"},
-  {name:"Desentupidora Faz Tudo SP", addr:"Pinheiros", zone:"Zona Oeste", cat:"Hidráulica", phone:"5511940713000"},
-  {name:"Ideal Soluções Hidráulicas", addr:"Interlagos", zone:"Zona Sul", cat:"Hidráulica", phone:"5511973006164"},
-  {name:"Desentupidora Nipo Brasil", addr:"Vila Bela", zone:"Zona Leste", cat:"Hidráulica", phone:"5511999397460"},
-  {name:"Saulo W.F Serviços", addr:"Vila Mariana", zone:"Zona Sul", cat:"Hidráulica", phone:"5511984787610"},
-  {name:"Pintura Residencial e Comercial SP", addr:"Vila Olímpia", zone:"Zona Oeste", cat:"Pintor", phone:"5511962893644"},
-  {name:"Gomes Pinturas", addr:"Consolação", zone:"Centro", cat:"Pintor", phone:"5511964094135"},
-  {name:"Pintor Residencial Gerson", addr:"Consolação", zone:"Centro", cat:"Pintor", phone:"5511994394635"},
-  {name:"Pinte Predial", addr:"Vila Mariana", zone:"Zona Sul", cat:"Pintor", phone:"5511995607772"},
-  {name:"Paulo Pintor", addr:"Brás", zone:"Centro", cat:"Pintor", phone:"5511966184420"},
-  {name:"Mesquita Portões", addr:"Jardim São Paulo", zone:"Zona Norte", cat:"Portões Automáticos", phone:"5511947272537"},
-  {name:"Portomatic Solar SP", addr:"Jardim Paulista", zone:"Centro", cat:"Portões Automáticos", phone:"5511917085678"},
-  {name:"Ericson Portões Automáticos", addr:"Parque Maria Helena", zone:"Zona Sul", cat:"Portões Automáticos", phone:"5511930035633"},
-  {name:"Zona Sul Portões Automáticos", addr:"Jardim Reimberg", zone:"Zona Sul", cat:"Portões Automáticos", phone:"5511967364789"},
-  {name:"GMS Portões Automáticos", addr:"Jardim Santa Adélia", zone:"Zona Leste", cat:"Portões Automáticos", phone:"5511984515024"},
-  {name:"Alfa Carretos Fretes & Mudanças", addr:"Cambuci", zone:"Centro", cat:"Fretes e Mudanças", phone:"5511990008160"},
-  {name:"Sandro Fretes e Mudanças", addr:"Liberdade", zone:"Centro", cat:"Fretes e Mudanças", phone:"5511970373857"},
-  {name:"Vanderson Carretos & Fretes", addr:"Jardim Ester Yolanda", zone:"Zona Oeste", cat:"Fretes e Mudanças", phone:"5511957894151"},
-  {name:"AS Fretes e Mudanças", addr:"Jardim Germânia", zone:"Zona Sul", cat:"Fretes e Mudanças", phone:"5511954871846"},
-  {name:"Ben Piscinas", addr:"Jardim Prudência", zone:"Zona Sul", cat:"Piscinas", phone:"5511995388054"},
-  {name:"TOK Piscinas", addr:"Jardim Monte Kemel", zone:"Zona Oeste", cat:"Piscinas", phone:"5511985547790"},
-  {name:"Limpa Piscinas", addr:"Butantã", zone:"Zona Oeste", cat:"Piscinas", phone:"5511956703434"},
-  {name:"Leda Designer de Sobrancelhas", addr:"Vila Diva", zone:"Zona Leste", cat:"Sobrancelhas", phone:"5511996186202"},
-  {name:"Onira Studio", addr:"Tatuapé", zone:"Zona Leste", cat:"Sobrancelhas", phone:"5511986291831"},
-  {name:"Fernanda Felix Epilação", addr:"Vila Santa Teresa", zone:"Zona Leste", cat:"Sobrancelhas", phone:"5511965232515"},
-  {name:"Amelia Studio", addr:"Vila Ré", zone:"Zona Leste", cat:"Sobrancelhas", phone:"5511992191574"},
+  {name:"Mori Swimming Morumbi", addr:"Vila Andrade", zone:"Zona Sul", cat:"Escola de Natação", phone:"5511930180068"},
+  {name:"Escola de Futebol SPFC Piloto", addr:"Vila Água Funda", zone:"Zona Sul", cat:"Escola de Futebol", phone:"5511954791000"},
+  {name:"Escola de Futebol SPFC Santana", addr:"Mandaqui", zone:"Zona Norte", cat:"Escola de Futebol", phone:"5511960811311"},
+  {name:"Soccer School Primeira Camisa", addr:"Tatuapé", zone:"Zona Leste", cat:"Escola de Futebol", phone:"5511947289379"},
+  {name:"Home Seniors Center", addr:"Vila São Francisco", zone:"Zona Sul", cat:"Cuidador de Idosos", phone:"5511911054928"},
+  {name:"Cuidar com Amor", addr:"Pinheiros", zone:"Zona Oeste", cat:"Cuidador de Idosos", phone:"5511973274889"},
+  {name:"Seven Home Care", addr:"Bela Vista", zone:"Centro", cat:"Cuidador de Idosos", phone:"5511980482186"},
+  {name:"Re9 Care", addr:"Jardim Paulistano", zone:"Zona Oeste", cat:"Cuidador de Idosos", phone:"5511965968172"},
+  {name:"Fonoaudióloga Talita Roveri", addr:"Pinheiros", zone:"Zona Oeste", cat:"Fonoaudiologia", phone:"5511981746515"},
+  {name:"Espaço Garcia", addr:"Tucuruvi", zone:"Zona Norte", cat:"Fonoaudiologia", phone:"5511973421640"},
+  {name:"Clinical Speech", addr:"Vila Mariana", zone:"Zona Sul", cat:"Fonoaudiologia", phone:"5511998194063"},
+  {name:"Dra. Daniela Galli", addr:"Cerqueira César", zone:"Centro", cat:"Fonoaudiologia", phone:"5511974689607"},
+  {name:"Fonoaudióloga Renata Santos", addr:"Vila Mariana", zone:"Zona Sul", cat:"Fonoaudiologia", phone:"5511916673643"},
+  {name:"Bruna Montesserratti", addr:"Cidade São Francisco", zone:"Zona Oeste", cat:"Maquiagem e Noivas", phone:"5511973612128"},
+  {name:"Studio Erika Okada", addr:"Parada Inglesa", zone:"Zona Norte", cat:"Maquiagem e Noivas", phone:"5511982886883"},
+  {name:"Beatriz Rocha Maquiadora", addr:"Jardim Umuarama", zone:"Zona Sul", cat:"Maquiagem e Noivas", phone:"5511966718137"},
+  {name:"Melina Giacomini", addr:"Vila Madalena", zone:"Zona Oeste", cat:"Maquiagem e Noivas", phone:"5511998335487"},
+  {name:"Kethryn Silva", addr:"Casa Verde", zone:"Zona Norte", cat:"Maquiagem e Noivas", phone:"5511941942177"},
+  {name:"Laiza Roma Maquiadora", addr:"Bela Vista", zone:"Centro", cat:"Maquiagem e Noivas", phone:"5511971452271"},
+  {name:"Brazzan Semijoias", addr:"25 de Março", zone:"Centro", cat:"Semijoias", phone:"5511990189745"},
+  {name:"Lillyth Semijoias", addr:"Bela Vista", zone:"Centro", cat:"Semijoias", phone:"5511941164536"},
+  {name:"Master Semijoias", addr:"Consolação", zone:"Centro", cat:"Semijoias", phone:"5511945080042"},
+  {name:"Rizzo Embalagens e Festas", addr:"Centro Histórico", zone:"Centro", cat:"Embalagens e Festas", phone:"5511995917054"},
+  {name:"Baratão Descartáveis", addr:"Brás", zone:"Centro", cat:"Embalagens e Festas", phone:"5511941500963"},
+  {name:"Camargo Corretora de Seguros", addr:"Cerqueira César", zone:"Centro", cat:"Corretora de Seguros", phone:"5511985761229"},
+  {name:"Store Brasil Corretora", addr:"Bela Vista", zone:"Centro", cat:"Corretora de Seguros", phone:"5511947739843"},
+  {name:"Space Blues Studio", addr:"Sumaré", zone:"Zona Oeste", cat:"Estúdio de Gravação", phone:"5511981521417"},
+  {name:"Studio Music Brazil", addr:"Cidade Líder", zone:"Zona Leste", cat:"Estúdio de Gravação", phone:"5511970399683"},
+  {name:"Greenhouse Studios", addr:"Vila Alexandria", zone:"Zona Sul", cat:"Estúdio de Gravação", phone:"5511951353543"},
+  {name:"K9 Estúdio", addr:"Parque Jabaquara", zone:"Zona Sul", cat:"Estúdio de Gravação", phone:"5511941567423"},
+  {name:"Anonimato Estúdios", addr:"Santa Cecília", zone:"Centro", cat:"Estúdio de Gravação", phone:"5511967125051"},
+  {name:"Estúdio 2112", addr:"Santana", zone:"Zona Norte", cat:"Estúdio de Gravação", phone:"5511996134488"},
+  {name:"Luxo das Marias", addr:"Brás", zone:"Centro", cat:"Moda Feminina", phone:"5511955990393"},
+  {name:"Hstar Moda Feminina", addr:"República", zone:"Centro", cat:"Moda Feminina", phone:"5511966538731"},
 ];
 
 const abertura = "Oi! Aqui é o Juan, da Nexo — eu faço sites para negócios daqui de São Paulo.";
 const fechamento = "Em agosto estou com um desconto pra fechar os primeiros clientes do mês. Posso te passar como funciona e o valor?";
 
-const messages = {
-  "Manicure": (b) => `${abertura}\n\nVi o ${b.name} no Google e as avaliações são ótimas. Só que quem procura "unha em ${b.addr}" bate primeiro em quem tem site com fotos dos trabalhos, tabela de preços e botão de agendar. Um site simples resolve isso e trabalha pra você 24h.\n\n${fechamento}`,
-  "Salgados e Doces": (b) => `${abertura}\n\nVi o ${b.name} e o movimento de encomendas de vocês. O que trava esse tipo de negócio é o cliente perguntar "quanto é o cento?" e ter que esperar resposta. Com um site de cardápio, preços e pedido direto no WhatsApp, ele já chega decidido.\n\n${fechamento}`,
-  "Sapataria": (b) => `${abertura}\n\nAchei o ${b.name} procurando conserto de calçado em ${b.addr}. Quem tem um sapato ou uma bolsa cara pra consertar pesquisa antes e quer ver foto de antes e depois pra confiar. Um site com esse portfólio e os serviços já te separa da concorrência.\n\n${fechamento}`,
-  "Turismo": (b) => `${abertura}\n\nVi o ${b.name} e a quantidade de gente elogiando as viagens. Só que pacote é compra cara: o cliente pesquisa a agência antes de pagar, e não achar um site derruba a confiança. Um site com os roteiros, as datas e os depoimentos resolve isso.\n\n${fechamento}`,
-  "Escola de Dança": (b) => `${abertura}\n\nVi o ${b.name} e as turmas que vocês têm. Quem quer começar a dançar procura no Google e quer ver grade de horários, os ritmos e o valor antes de mandar mensagem. Com um site assim você recebe menos pergunta repetida e mais matrícula.\n\n${fechamento}`,
-  "Reforço Escolar": (b) => `${abertura}\n\nVi o ${b.name} e os resultados que os pais comentam. Mãe procurando reforço compara três ou quatro antes de escolher, e quem tem site com o método, as matérias e os depoimentos sai na frente. É o tipo de serviço que se vende pela confiança.\n\n${fechamento}`,
-  "Oficina Mecânica": (b) => `${abertura}\n\nVi o ${b.name} e a fama de honestidade nas avaliações — isso é raro no ramo e vale ouro. Quem está com o carro parado procura oficina no Google e escolhe pela confiança que o site passa: serviços, fotos da oficina e orçamento no WhatsApp.\n\n${fechamento}`,
-  "Floricultura": (b) => `${abertura}\n\nVi a ${b.name} e o capricho dos arranjos. Flor se vende pelo olho: quem quer mandar um buquê precisa ver as opções e o preço na hora, senão compra de quem tem site ou fica só no iFood pagando taxa. Um catálogo próprio com pedido no WhatsApp muda essa conta.\n\n${fechamento}`,
-  "Ótica": (b) => `${abertura}\n\nVi a ${b.name} e o atendimento que os clientes elogiam. Óculos é compra visual: quem procura em ${b.addr} quer ver as armações e entender as lentes antes de sair de casa. Um site com esse catálogo traz gente já quase decidida na sua porta.\n\n${fechamento}`,
-  "Pet Shop": (b) => `${abertura}\n\nVi o ${b.name} e o carinho que os clientes descrevem com os pets. Dono de cachorro procura banho e tosa perto de casa e quer ver preço, serviços e agendar sem ligar. Um site simples com isso já enche a agenda da semana.\n\n${fechamento}`,
-  "Lavanderia": (b) => `${abertura}\n\nVi a ${b.name} e a nota de vocês. Quem procura lavanderia quer saber duas coisas antes de ir: quanto custa e quando fica pronto. Um site com tabela, prazos e pedido de coleta pelo WhatsApp tira essa fricção toda.\n\n${fechamento}`,
-  "Chaveiro": (b) => `${abertura}\n\nVi o ${b.name} e o tanto de gente falando da rapidez de vocês. Chaveiro é serviço de desespero: a pessoa está trancada na rua, pesquisa no celular e liga pro primeiro que passa confiança. Um site com região atendida, serviços e botão de chamar agora ganha essa corrida.\n\n${fechamento}`,
-  "Dedetizadora": (b) => `${abertura}\n\nVi a ${b.name} e as avaliações sobre a garantia de vocês. Dedetização entra em casa, então o cliente pesquisa muito antes de contratar. Um site explicando o processo, a garantia e os produtos usados fecha orçamento que hoje some no meio da pesquisa.\n\n${fechamento}`,
-  "Ar Condicionado": (b) => `${abertura}\n\nVi a ${b.name} e o padrão das instalações de vocês. Nessa área o cliente pede três orçamentos e escolhe quem parece mais sério — e quem só tem perfil do Google parece menor do que é. Um site com serviços, fotos das instalações e orçamento no WhatsApp inverte isso.\n\n${fechamento}`,
-  "Paisagismo": (b) => `${abertura}\n\nVi o trabalho da ${b.name} e é o tipo de coisa que precisa ser vista pra ser vendida. Projeto de jardim se fecha pelo portfólio: fotos grandes de antes e depois, num site que é seu e não some junto com o algoritmo da rede social.\n\n${fechamento}`,
-  "Buffet Infantil": (b) => `${abertura}\n\nVi o ${b.name} e o quanto os pais elogiam as festas. Só que mãe planejando aniversário compara pacote, preço e fotos com calma, geralmente à noite — e se não achar um site, decide com quem tem. Um site com os pacotes e um álbum das festas resolve.\n\n${fechamento}`,
-  "Tapeçaria": (b) => `${abertura}\n\nVi a ${b.name} e os antes e depois nas avaliações. Reforma de sofá é decisão visual e cara: o cliente precisa ver o resultado e os tecidos pra confiar em entregar o móvel. Um site com esse portfólio e orçamento por foto no WhatsApp fecha mais.\n\n${fechamento}`,
-  "Cortinas e Persianas": (b) => `${abertura}\n\nVi a ${b.name} e a qualidade das instalações. Cortina e persiana o cliente escolhe pelo olho: modelos, tecidos, ambientes prontos. Um site com esse catálogo e agendamento de medição faz o cliente chegar já sabendo o que quer.\n\n${fechamento}`,
-  "Fotografia": (b) => `${abertura}\n\nVi o trabalho da ${b.name} e ele merece mais do que uma fichinha no Google. Fotógrafo se contrata pelo portfólio, e um site próprio com os ensaios, os pacotes e um formulário de contato passa muito mais profissionalismo do que só mandar link de rede social.\n\n${fechamento}`,
-  "Aluguel de Brinquedos": (b) => `${abertura}\n\nVi a ${b.name} e o movimento de festas de vocês. O cliente quer ver os brinquedos disponíveis, o tamanho, o preço e a data livre — tudo isso antes de mandar mensagem. Um site com catálogo e pedido de reserva economiza horas do seu WhatsApp por semana.\n\n${fechamento}`,
-  "Gesso e Drywall": (b) => `${abertura}\n\nVi o trabalho da ${b.name}. Sanca e forro se vendem por foto: quem está reformando procura referência visual antes de chamar alguém. Um site com o portfólio das obras e orçamento por foto no WhatsApp traz cliente mais qualificado.\n\n${fechamento}`,
-  "Eletricista": (b) => `${abertura}\n\nVi o ${b.name} e as avaliações sobre honestidade e pontualidade — é exatamente o que o cliente procura, já que vai deixar um estranho mexer na casa. Um site com serviços, região atendida e seu registro passa essa confiança antes mesmo da primeira mensagem.\n\n${fechamento}`,
-  "Hidráulica": (b) => `${abertura}\n\nVi a ${b.name} e a rapidez que os clientes citam. Vazamento e entupimento são urgência: a pessoa pesquisa no celular, olha dois ou três e chama quem parece mais confiável. Um site com atendimento 24h, serviços e botão de chamar agora ganha essa disputa.\n\n${fechamento}`,
-  "Pintor": (b) => `${abertura}\n\nVi o trabalho da ${b.name}. Pintura o cliente contrata por indicação ou por prova visual — e quem tem site com antes e depois, tipos de serviço e orçamento pelo WhatsApp fecha obra que hoje vai pro concorrente que apareceu primeiro no Google.\n\n${fechamento}`,
-  "Portões Automáticos": (b) => `${abertura}\n\nVi a ${b.name} e a agilidade que os clientes elogiam. Portão quebrado é urgência e insegurança: a pessoa procura no Google e chama quem passa mais confiança. Um site com serviços, marcas atendidas e chamada rápida no WhatsApp faz diferença nessa hora.\n\n${fechamento}`,
-  "Fretes e Mudanças": (b) => `${abertura}\n\nVi a ${b.name} e o cuidado que os clientes descrevem. Mudança é entregar tudo o que a pessoa tem na mão de um desconhecido — ela pesquisa muito antes. Um site com o serviço, o caminhão, fotos e orçamento online passa a seriedade que fecha o contrato.\n\n${fechamento}`,
-  "Piscinas": (b) => `${abertura}\n\nVi a ${b.name} e o trabalho de vocês. Manutenção de piscina é contrato mensal: vale muito mais aparecer bem pra quem procura, porque cada cliente fechado fica meses. Um site com planos, região atendida e orçamento no WhatsApp ajuda direto nisso.\n\n${fechamento}`,
-  "Sobrancelhas": (b) => `${abertura}\n\nVi o trabalho da ${b.name} e as avaliações são ótimas. Sobrancelha e cílios se vendem por antes e depois: a cliente quer ver o resultado, o preço e agendar sem ficar esperando resposta. Um site com portfólio e agendamento resolve os três de uma vez.\n\n${fechamento}`,
+const ganchos = {
+  "Pizzaria": (b) => `Vi a ${b.name} e as avaliações da massa de vocês. Pizzaria vive de pedido recorrente, e hoje boa parte dele passa por app cobrando comissão. Um site com o cardápio e pedido direto no WhatsApp faz o cliente pedir de você, sem intermediário.`,
+  "Açougue": (b) => `Vi a ${b.name} e o cuidado com os cortes que os clientes descrevem. Açougue bom hoje vende por encomenda: o cliente quer ver os cortes, pedir pelo WhatsApp e receber em casa. Um site com isso organizado vira pedido fixo toda semana.`,
+  "Sorveteria": (b) => `Vi a ${b.name} e o quanto elogiam os sabores. Sorvete é compra por impulso e por foto: quem procura sorveteria em ${b.addr} decide pelo que vê. Um site com os sabores, o espaço e onde vocês ficam traz gente nova do Google direto na porta.`,
+  "Cafeteria": (b) => `Vi a ${b.name} e o ambiente que os clientes descrevem. Cafeteria se escolhe pela vibe: quem procura café em ${b.addr} quer ver as fotos do espaço, o menu e se dá pra trabalhar ali. Um site responde isso melhor que um feed que some.`,
+  "Sushi e Japonesa": (b) => `Vi a ${b.name} e a qualidade que os clientes citam. Delivery japonês vive preso a app, com comissão pesada em cada pedido. Um site com o cardápio, os combinados e pedido direto no WhatsApp devolve essa margem pra você.`,
+  "Espetinho e Churrasco": (b) => `Vi a ${b.name} e os elogios aos eventos de vocês. Churrasco em domicílio se fecha com antecedência: o cliente quer ver os pacotes, o que está incluso e a data livre antes de mandar mensagem. Um site com isso corta metade da conversa e traz cliente já decidido.`,
+  "Produtos Naturais": (b) => `Vi a ${b.name}. Quem procura suplemento e produto natural pesquisa muito preço e marca antes de ir na loja. Um site com o mix, as marcas que vocês trabalham e pedido no WhatsApp traz cliente já sabendo o que quer — inclusive de fora do bairro.`,
+  "Peixaria": (b) => `Vi a ${b.name} e a qualidade dos pescados que os clientes elogiam. Peixe é compra planejada: o cliente quer saber o que tem fresco hoje e se entrega em casa. Um site com isso e pedido no WhatsApp fideliza cliente semanal, não só o de sexta-feira.`,
+  "Reforma e Construção": (b) => `Vi a ${b.name} e os relatos de obra entregue no prazo — isso é raro no ramo e vale ouro. Quem vai reformar pesquisa muito e desconfia de tudo. Um site com obras prontas, antes e depois e como funciona o orçamento fecha cliente que hoje some no meio da pesquisa.`,
+  "Impermeabilização": (b) => `Vi a ${b.name} e os comentários sobre garantia e serviço bem feito. Impermeabilização o cliente contrata com medo, porque já foi mal atendido antes. Um site com o processo, os materiais, a garantia e obras entregues resolve essa desconfiança antes da primeira conversa.`,
+  "Higienização de Estofados": (b) => `Vi a ${b.name} e as fotos de antes e depois nas avaliações — é exatamente isso que vende esse serviço. Um site com essa galeria, os valores por tipo de sofá e agendamento no WhatsApp faz o cliente decidir sozinho e já chegar marcando.`,
+  "Pisos e Revestimentos": (b) => `Vi o trabalho da ${b.name}. Assentamento de porcelanato o cliente escolhe por acabamento: quer ver obra pronta, rodapé, recorte, nivelamento. Um site com esse portfólio e orçamento por foto no WhatsApp traz cliente mais qualificado e menos curioso.`,
+  "Energia Solar": (b) => `Vi a ${b.name}. Energia solar é investimento alto: o cliente pede três orçamentos, pesquisa a empresa e some se não achar nada. Um site com instalações prontas, simulação de economia e o processo de homologação segura esse cliente com você.`,
+  "Comunicação Visual": (b) => `Vi o trabalho da ${b.name}. Fachada e letreiro se vendem por foto — e quem contrata é dono de comércio abrindo ou reformando loja, que pesquisa no Google. Um site com as fachadas que vocês fizeram e orçamento no WhatsApp pega esse cliente na hora certa.`,
+  "Brindes Personalizados": (b) => `Vi a ${b.name} e a agilidade que os clientes elogiam. Brinde e camiseta personalizada é pedido de empresa e de evento, quase sempre com pressa. Um site com os produtos, prazos e pedido de orçamento faz o comprador te achar antes do concorrente.`,
+  "Caçambas e Entulho": (b) => `Vi a ${b.name} e a pontualidade que os clientes citam. Caçamba é decisão de 5 minutos: a obra parou e a pessoa liga pro primeiro que aparece no Google e passa confiança. Um site com tamanhos, valores, região atendida e pedido rápido ganha essa corrida.`,
+  "Montador de Móveis": (b) => `Vi o trabalho da ${b.name} e as avaliações sobre capricho e serviço limpo. Montagem é urgência: o móvel chegou e a pessoa quer resolver hoje. Um site com serviços, região e agendamento no WhatsApp faz ela te achar antes do app de serviços — que ainda leva sua comissão.`,
+  "Depilação a Laser": (b) => `Vi a ${b.name} e os resultados que as clientes descrevem. Depilação a laser é pacote caro: a cliente compara clínica, aparelho e preço por semanas antes de fechar. Um site com o equipamento, as áreas, os pacotes e agendamento tira você da disputa só por preço.`,
+  "Escola de Natação": (b) => `Vi a ${b.name}. Mãe procurando natação pro filho quer ver a piscina, os horários por idade e a estrutura antes de visitar. Um site com fotos, grade de turmas e agendamento de aula experimental traz matrícula que hoje para na primeira mensagem.`,
+  "Escola de Futebol": (b) => `Vi a ${b.name} e o quanto os pais elogiam os professores. Escolinha se escolhe por confiança e proximidade: o pai quer ver o campo, os horários por idade e o valor. Um site com isso e matrícula pelo WhatsApp enche turma no começo do semestre.`,
+  "Cuidador de Idosos": (b) => `Vi a ${b.name} e os relatos das famílias — nesse ramo, isso é o que vende. Contratar cuidador é decisão feita em momento delicado, pesquisando muito e com medo de errar. Um site com como funciona, a formação da equipe e depoimentos passa a segurança que fecha o contrato.`,
+  "Fonoaudiologia": (b) => `Vi o consultório da ${b.name}. Pai procurando fono pro filho pesquisa bastante: quer entender a abordagem, se atende a queixa específica e como agendar. Um site com isso claro traz paciente certo e evita consulta que não é o seu perfil.`,
+  "Maquiagem e Noivas": (b) => `Vi o trabalho da ${b.name} e ele merece mais do que um feed. Noiva escolhe maquiadora por portfólio e disponibilidade de data — e pesquisa com meses de antecedência. Um site com as noivas que você já atendeu, os pacotes e um formulário de data trabalha por você enquanto você atende.`,
+  "Semijoias": (b) => `Vi a ${b.name} e a qualidade das peças. Semijoia hoje se vende no atacado pra revendedora, e ela quer ver catálogo, pedido mínimo e condições antes de mandar mensagem. Um site com isso te traz revendedora nova do Brasil inteiro, não só de quem passa na loja.`,
+  "Embalagens e Festas": (b) => `Vi a ${b.name}. Seu cliente é confeiteira, lanchonete, buffet — gente que compra sempre e pesquisa fornecedor no Google. Um site com as linhas de produto, condições de atacado e pedido no WhatsApp te coloca na frente de comprador que hoje nem sabe que você existe.`,
+  "Corretora de Seguros": (b) => `Vi a ${b.name} e as avaliações sobre atendimento. Seguro e plano de saúde o cliente pesquisa corretor antes de passar dados pessoais — e não achar nada online derruba a confiança na hora. Um site com quem é você, o que trabalha e um formulário de cotação resolve isso.`,
+  "Estúdio de Gravação": (b) => `Vi o ${b.name} e a estrutura de vocês. Artista escolhe estúdio pelo que vê e ouve: fotos das salas, lista de equipamentos, quem já gravou aí, valor da hora. Um site com isso e reserva no WhatsApp preenche horário vago que hoje fica parado.`,
+  "Moda Feminina": (b) => `Vi a ${b.name} e as peças de vocês. Lojista que compra no atacado pesquisa fornecedor no Google e quer ver a grade, o pedido mínimo e as condições antes de ir até a loja. Um site com o catálogo e contato direto traz sacoleira e revendedora nova toda semana.`,
 };
 
 function buildMessage(b){
-  const fn = messages[b.cat];
-  if (fn) return fn(b);
-  return `${abertura}\n\nVi o ${b.name} em ${b.addr} e as avaliações de vocês. Um site simples, com os serviços, fotos e contato direto no WhatsApp, faz quem procura no Google chegar até você em vez de cair na concorrência.\n\n${fechamento}`;
+  const fn = ganchos[b.cat];
+  const gancho = fn ? fn(b) : `Vi o ${b.name} em ${b.addr} e as avaliações de vocês. Um site simples, com os serviços, fotos e contato direto no WhatsApp, faz quem procura no Google chegar até você em vez de cair na concorrência.`;
+  return `${abertura}\n\n${gancho}\n\n${blocoPortfolio()}\n\n${fechamento}`;
 }
 
 /* marcação de contatado — salva no navegador quando possível, senão vale só nesta sessão */
 let contacted = {};
 try {
-  contacted = JSON.parse(window.localStorage.getItem('nexo_v6_contacted') || '{}');
+  contacted = JSON.parse(window.localStorage.getItem('nexo_v8_contacted') || '{}');
 } catch (e) {
   contacted = {};
 }
 function saveContacted(){
-  try { window.localStorage.setItem('nexo_v6_contacted', JSON.stringify(contacted)); } catch (e) {}
+  try { window.localStorage.setItem('nexo_v8_contacted', JSON.stringify(contacted)); } catch (e) {}
 }
 
 const grid = document.getElementById('grid');
